@@ -57,18 +57,26 @@ const newUser = async (req, res, next) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("📥 Login attempt:", { username, password }); // Log input
+
     const user = await User.findOne({ username }).select("+password");
 
     if (!user) {
+      console.log("❌ User not found in DB.");
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("🔐 Stored password hash:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("✅ Password match result:", isMatch);
 
     if (!isMatch) {
+      console.log("❌ Incorrect password");
       return res.status(400).json({ message: "Invalid password" });
     }
 
+    console.log("🎉 Login successful, sending token...");
     sendToken(res, user, 200, `Welcome back, ${user.name}`);
   } catch (error) {
     console.error("❌ Login error:", error);
@@ -78,6 +86,7 @@ const login = async (req, res) => {
     });
   }
 };
+
 
 // Get user profile
 const getMyProfile = async (req, res) => {
